@@ -89,6 +89,7 @@ public class Database {
                 ps.setString(3, getEncryptedPass(oldPassword));
                 ps.executeUpdate();
                 System.out.println("\033[34mSuccessfully changed password!\033[0m");
+                connection.close();
             }
         } catch (Exception e) { e.printStackTrace(); }
     }
