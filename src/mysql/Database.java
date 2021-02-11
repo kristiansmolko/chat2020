@@ -45,6 +45,9 @@ public class Database {
     }
 
     public void register(String name, String password, String password2){
+        if (password == null || password.equals("")){
+            System.out.println("\033[31mPlease write your password!\033[0m");
+        }
         if (isUser(name)) {
             System.out.println("\033[31mThis user already exist!\033[0m");
             return;
