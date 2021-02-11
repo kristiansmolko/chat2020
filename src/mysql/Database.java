@@ -6,13 +6,16 @@ import mysql.entity.User;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import static mysql.helper.Help.*;
 
 public class Database {
     private final String registerUser = "INSERT INTO user(login, password) VALUES(?, ?)";
-    private final String newMessage = "INSERT INTO message(from, to, text) VALUES(?, ?, ?)";
+    private final String newMessage = "INSERT INTO message(fromUser, toUser, text) VALUES(?, ?, ?)";
+    private final String getMyMessages = "SELECT * FROM message WHERE fromUser = ?";
     public User login(String name, String password){
         String query = "SELECT id, login, password FROM user " +
                 "WHERE login = ?";
@@ -127,17 +130,27 @@ public class Database {
         return false;
     }
 
-    public int getUserId(String login){
-
-        return -1;
-    }
-
     public List<Message> getMyMessages(String login){
         //metoda delete my messages
-        return null;
-    }
-
-    public void deleteAllMyMessages(String login){
-
+        List<Message> list = new ArrayList<>();
+        try {
+            Connection connection = getConnection();
+            if (connection != null){
+                PreparedStatement ps = connection.prepareStatement(getMyMessages);
+                ps.setInt(1, getUserId(login));
+                ResultSet rs = ps.executeQuery();
+                while (rs.next()){
+                    int idMessage = rs.getInt("id");
+                    Date time = rs.getTime("dt");
+                    String from = getUserName(rs.getInt("fromUser"));
+                    String to = getUserName(rs.getInt("toUser"));
+                    String text = rs.getString("text");
+                    list.add(new Message(idMessage, from, to, time, text));
+                }
+                connection.close();
+            }
+        } catch (Exception e) { e.printStackTrace(); }
+        //deleteAllMyMessages(login);
+        return list;
     }
 }
