@@ -1,14 +1,20 @@
 package mysql;
 
+import mysql.entity.Message;
+import mysql.entity.User;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.List;
 
 import static mysql.helper.Help.*;
 
 public class Database {
-    public boolean login(String name, String password){
-        String query = "SELECT login, password FROM user " +
+    private final String registerUser = "INSERT INTO user(login, password) VALUES(?, ?)";
+    private final String newMessage = "INSERT INTO message(from, to, text) VALUES(?, ?, ?)";
+    public User login(String name, String password){
+        String query = "SELECT id, login, password FROM user " +
                 "WHERE login = ?";
         try {
             Connection connection = getConnection();
@@ -20,8 +26,9 @@ public class Database {
                     String usedPass = rs.getString("password");
                     if (usedPass.equals(getEncryptedPass(password))){
                         System.out.println("\033[34mSuccessfully logged in!\033[0m");
+                        int id = rs.getInt("id");
                         connection.close();
-                        return true;
+                        return new User(id, name, password);
                     } else {
                         System.out.println("\033[31mWrong password!\033[0m");
                     }
@@ -31,12 +38,10 @@ public class Database {
                 connection.close();
             }
         } catch (Exception e) { e.printStackTrace(); }
-        return false;
+        return null;
     }
 
     public void register(String name, String password, String password2){
-        String query = "INSERT INTO user(login, password) " +
-                "VALUES(?, ?)";
         if (isUser(name)) {
             System.out.println("\033[31mThis user already exist!\033[0m");
             return;
@@ -48,7 +53,7 @@ public class Database {
         try {
             Connection connection = getConnection();
             if (connection != null){
-                PreparedStatement ps = connection.prepareStatement(query);
+                PreparedStatement ps = connection.prepareStatement(registerUser);
                 ps.setString(1, name);
                 String hashedPass = getEncryptedPass(password);
                 ps.setString(2, hashedPass);
@@ -76,7 +81,7 @@ public class Database {
             System.out.println("\033[31mYou can't use the same password\033[0m");
             return;
         }
-        if (!login(name, oldPassword))
+        if (login(name, oldPassword) == null)
             return;
         try {
             Connection connection = getConnection();
@@ -92,5 +97,47 @@ public class Database {
                 connection.close();
             }
         } catch (Exception e) { e.printStackTrace(); }
+    }
+
+    public boolean sendMessage(int from, String toUser, String text){
+        if (text == null || text.equals(""))
+            return false;
+        int to = getUserId(toUser);
+        if (to == -1)
+            return false;
+        try {
+             Connection connection = getConnection();
+             if (connection == null){
+                 System.out.println("\033[31mConnection lost!\033[0m");
+                 return false;
+             }
+             PreparedStatement ps = connection.prepareStatement(newMessage);
+             ps.setInt(1, from);
+             ps.setInt(2, to);
+             ps.setString(3, text);
+             int result = ps.executeUpdate();
+             if (result < 1){
+                 System.out.println("\033[31mMessage not sent!\033[0m");
+             } else {
+                 System.out.println("\033[34mMessage sent!\033[0m");
+                 return true;
+             }
+            connection.close();
+        } catch (Exception e) { e.printStackTrace(); }
+        return false;
+    }
+
+    public int getUserId(String login){
+
+        return -1;
+    }
+
+    public List<Message> getMyMessages(String login){
+        //metoda delete my messages
+        return null;
+    }
+
+    public void deleteAllMyMessages(String login){
+
     }
 }
