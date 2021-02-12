@@ -1,11 +1,17 @@
 package mysql;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.scene.Scene;
+import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
+import javafx.util.Duration;
+import mysql.entity.User;
 
 import static mysql.graphics.Graphics.*;
+import static mysql.helper.Help.*;
 
 public class Main extends Application {
     Database dat = new Database();
@@ -28,11 +34,38 @@ public class Main extends Application {
         BorderPane root = loginScreen();
         Scene scene = new Scene(root, 400,400);
         loginButton.setOnMouseClicked(e -> {
-            dat.login(loginInput.getText(), loginPassword.getText());
-
+            String login = loginInput.getText().trim();
+            String password = loginPassword.getText().trim();
+            User user = dat.login(login, password);
+            if (user == null){
+                Timeline timer = new Timeline(
+                        new KeyFrame(Duration.millis(1), e2 -> warningLogin.setVisible(true)),
+                        new KeyFrame(Duration.millis(2000), e2 -> warningLogin.setVisible(false))
+                );
+                timer.setCycleCount(1);
+                timer.play();
+            }
         });
         registerButton.setOnMouseClicked(e -> {
-            dat.register(registerInput.getText(), pf.getText(), pf2.getText());
+            String login = registerInput.getText().trim();
+            String pass1 = pf.getText().trim();
+            String pass2 = pf2.getText().trim();
+            if (isUser(login)){
+                Timeline timer = new Timeline(
+                        new KeyFrame(Duration.millis(1), e2 -> userExist.setVisible(true)),
+                        new KeyFrame(Duration.millis(2000), e2 -> userExist.setVisible(false))
+                );
+                timer.setCycleCount(1);
+                timer.play();
+            }else if (!pass1.equals(pass2)){
+                Timeline timer = new Timeline(
+                        new KeyFrame(Duration.millis(1), e2 -> passwordsMatchLabel.setVisible(true)),
+                        new KeyFrame(Duration.millis(2000), e2 -> passwordsMatchLabel.setVisible(false))
+                );
+                timer.setCycleCount(1);
+                timer.play();
+            }
+            dat.register(login, pass1);
             registerInput.setText("");
             pf.setText("");
             pf2.setText("");
