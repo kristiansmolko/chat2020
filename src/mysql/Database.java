@@ -16,6 +16,7 @@ public class Database {
     private final String registerUser = "INSERT INTO user(login, password) VALUES(?, ?)";
     private final String newMessage = "INSERT INTO message(fromUser, toUser, text) VALUES(?, ?, ?)";
     private final String getMyMessages = "SELECT * FROM message WHERE fromUser = ?";
+
     public User login(String name, String password){
         String query = "SELECT id, login, password FROM user " +
                 "WHERE login = ?";
@@ -44,16 +45,12 @@ public class Database {
         return null;
     }
 
-    public void register(String name, String password, String password2){
+    public void register(String name, String password){
         if (password == null || password.equals("")){
             System.out.println("\033[31mPlease write your password!\033[0m");
         }
         if (isUser(name)) {
             System.out.println("\033[31mThis user already exist!\033[0m");
-            return;
-        }
-        if (!password.equals(password2)){
-            System.out.println("\033[31mPaswords don't match!\033[0m");
             return;
         }
         try {
