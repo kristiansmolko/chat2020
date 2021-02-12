@@ -24,6 +24,10 @@ public class Graphics {
     public static Label signUp = getSignUp();
     public static Label signIn = getSignIn();
 
+    public static Label warningLogin = getWarningLogin();
+    public static Label passwordsMatchLabel = getPasswordsMatchAlert();
+    public static Label userExist = getUserExist();
+
     public static BorderPane loginScreen(){
         BorderPane root = new BorderPane();
         Rectangle rect = new Rectangle();
@@ -46,7 +50,7 @@ public class Graphics {
         loginButton.setTranslateY(60);
 
         StackPane loginPane = new StackPane();
-        loginPane.getChildren().addAll(rect, login, loginButton, signUp);
+        loginPane.getChildren().addAll(rect, login, loginButton, signUp, warningLogin);
         root.setCenter(loginPane);
         return root;
     }
@@ -75,7 +79,7 @@ public class Graphics {
         signIn.setTranslateY(100);
 
         StackPane registerPane = new StackPane();
-        registerPane.getChildren().addAll(rect, register, registerButton, signIn);
+        registerPane.getChildren().addAll(rect, register, registerButton, signIn, passwordsMatchLabel, userExist);
         root.setCenter(registerPane);
         return root;
     }
@@ -114,6 +118,33 @@ public class Graphics {
         signIn.setUnderline(true);
         signIn.setTranslateY(90);
         return signIn;
+    }
+
+    private static Label getWarningLogin(){
+        Label warning = new Label("Incorrect login");
+        warning.setTranslateY(-80);
+        warning.setTextFill(Color.RED);
+        warning.setFont(Font.font(20));
+        warning.setVisible(false);
+        return warning;
+    }
+
+    private static Label getPasswordsMatchAlert(){
+        Label warning = new Label("Passwords must match!");
+        warning.setTranslateY(-90);
+        warning.setTextFill(Color.RED);
+        warning.setFont(Font.font(18));
+        warning.setVisible(false);
+        return warning;
+    }
+
+    private static Label getUserExist(){
+        Label warning = new Label("This user exist!");
+        warning.setTranslateY(-90);
+        warning.setTextFill(Color.RED);
+        warning.setFont(Font.font(20));
+        warning.setVisible(false);
+        return warning;
     }
 
 }
