@@ -8,7 +8,11 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import mysql.entity.Message;
 import mysql.entity.User;
+
+import java.awt.*;
+import java.util.List;
 
 import static mysql.graphics.Graphics.*;
 import static mysql.helper.Help.*;
@@ -19,19 +23,18 @@ public class Main extends Application {
     String pass = TopSecretData.getChatPass();
 
     public static void main(String[] args) {
-        launch(args);
-
-        /*List<Message> list = dat.getMyMessages(name);
+        /*Database dat = new Database();
+        List<Message> list = dat.getMyMessages("kristianS");
         for (Message m : list){
-            System.out.println(m.getFrom() + " to " + m.getTo() + " at " + m.getDt() + " : " + m.getText());
+            System.out.println(m.getDt() + " " + m.getFrom() + " to " + m.getTo() + ": " + m.getText());
         }*/
-
-
+        launch(args);
     }
 
     @Override
     public void start(Stage stage) throws Exception {
-        BorderPane root = loginScreen();
+        //BorderPane root = loginScreen();
+        BorderPane root = messagesScreen(dat.login(name, pass));
         Scene scene = new Scene(root, 400,400);
         loginButton.setOnMouseClicked(e -> {
             String login = loginInput.getText().trim();
@@ -44,6 +47,16 @@ public class Main extends Application {
                 );
                 timer.setCycleCount(1);
                 timer.play();
+            } else {
+                BorderPane messagesRoot = messagesScreen(user);
+                Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+                double width = screenSize.getWidth();
+                double height = screenSize.getHeight();
+                Scene messagesScene = new Scene(messagesRoot, width, height);
+                stage.setScene(messagesScene);
+                stage.setMaximized(true);
+                stage.setTitle("Messenger");
+                stage.show();
             }
         });
         registerButton.setOnMouseClicked(e -> {
@@ -65,7 +78,8 @@ public class Main extends Application {
                 timer.setCycleCount(1);
                 timer.play();
             }
-            dat.register(login, pass1);
+            if (isUser(login) && pass1.equals(pass2))
+                dat.register(login, pass1);
             registerInput.setText("");
             pf.setText("");
             pf2.setText("");
