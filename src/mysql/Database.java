@@ -13,10 +13,6 @@ import java.util.List;
 import static mysql.helper.Help.*;
 
 public class Database {
-    private final String registerUser = "INSERT INTO user(login, password) VALUES(?, ?)";
-    private final String newMessage = "INSERT INTO message(fromUser, toUser, text) VALUES(?, ?, ?)";
-    private final String getMyMessages = "SELECT * FROM message WHERE fromUser = ?";
-
     public User login(String name, String password){
         String query = "SELECT id, login, password FROM user " +
                 "WHERE login = ?";
@@ -56,6 +52,7 @@ public class Database {
         try {
             Connection connection = getConnection();
             if (connection != null){
+                String registerUser = "INSERT INTO user(login, password) VALUES(?, ?)";
                 PreparedStatement ps = connection.prepareStatement(registerUser);
                 ps.setString(1, name);
                 String hashedPass = getEncryptedPass(password);
@@ -114,7 +111,8 @@ public class Database {
                  System.out.println("\033[31mConnection lost!\033[0m");
                  return false;
              }
-             PreparedStatement ps = connection.prepareStatement(newMessage);
+            String newMessage = "INSERT INTO message(fromUser, toUser, text) VALUES(?, ?, ?)";
+            PreparedStatement ps = connection.prepareStatement(newMessage);
              ps.setInt(1, from);
              ps.setInt(2, to);
              ps.setString(3, text);
@@ -128,29 +126,5 @@ public class Database {
             connection.close();
         } catch (Exception e) { e.printStackTrace(); }
         return false;
-    }
-
-    public List<Message> getMyMessages(String login){
-        //metoda delete my messages
-        List<Message> list = new ArrayList<>();
-        try {
-            Connection connection = getConnection();
-            if (connection != null){
-                PreparedStatement ps = connection.prepareStatement(getMyMessages);
-                ps.setInt(1, getUserId(login));
-                ResultSet rs = ps.executeQuery();
-                while (rs.next()){
-                    int idMessage = rs.getInt("id");
-                    Date time = rs.getTime("dt");
-                    String from = getUserName(rs.getInt("fromUser"));
-                    String to = getUserName(rs.getInt("toUser"));
-                    String text = rs.getString("text");
-                    list.add(new Message(idMessage, from, to, time, text));
-                }
-                connection.close();
-            }
-        } catch (Exception e) { e.printStackTrace(); }
-        //deleteAllMyMessages(login);
-        return list;
     }
 }
