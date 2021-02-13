@@ -1,21 +1,33 @@
 package mysql.graphics;
 
+import javafx.event.ActionEvent;
+import javafx.event.Event;
+import javafx.event.EventHandler;
+import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
+import mysql.Database;
+import mysql.entity.Message;
+import mysql.entity.User;
+import mysql.helper.Help;
+
+import java.awt.*;
+import java.util.List;
 
 public class Graphics {
-    public static Button loginButton = getLoginButton();
-    public static Button registerButton = getRegisterButton();
+    public static Button loginButton = getButton("Login");
+    public static Button registerButton = getButton("Register");
     public static TextField loginInput = new TextField();
     public static TextField registerInput = new TextField();
     public static PasswordField loginPassword = new PasswordField();
@@ -32,7 +44,7 @@ public class Graphics {
         BorderPane root = new BorderPane();
         Rectangle rect = new Rectangle();
         rect.setStroke(Color.DARKGRAY);
-        rect.setFill(Color.LIGHTGRAY);
+        rect.setFill(Color.AZURE);
         rect.setWidth(200); rect.setHeight(200);
         rect.setTranslateX(0);
         rect.setTranslateY(0);
@@ -84,18 +96,56 @@ public class Graphics {
         return root;
     }
 
-    private static Button getLoginButton() {
-        Button loginButton = new Button("Login");
-        loginButton.setTextFill(Color.WHITE);
-        loginButton.setMaxWidth(100);
-        loginButton.setStyle("-fx-background-radius: 5px; " +
-                "-fx-background-color: CYAN;");
-        return loginButton;
+    public static BorderPane messagesScreen(User user){
+        BorderPane root = new BorderPane();
+        List<Message> listOfAll = Help.getAllMessages();
+        List<Message> listOfMy = Help.getMyMessages(user.getLogin());
+        List<String> listOfUsers = Help.getUsers();
+
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        double width = screenSize.getWidth();
+        double height = screenSize.getHeight();
+
+        TextArea messagesArea = new TextArea();
+        messagesArea.setMaxWidth(width-200);
+        messagesArea.setMaxHeight(height-150);
+        messagesArea.setStyle("-fx-margin: 20");
+        messagesArea.setEditable(false);
+        for (Message m : listOfAll)
+            messagesArea.appendText(m.getDt() + " " + m.getFrom() + " to " + m.getTo() + ": " + m.getText() + "\n");
+
+        Button myMessages = getButton("My messages");
+        myMessages.setOnAction(getMyMessAction(messagesArea, listOfMy, user));
+
+        Button allMessages = getButton("All messages");
+        allMessages.setOnAction(getAllMessAction(messagesArea, listOfAll));
+
+        GridPane buttons = new GridPane();
+        buttons.setStyle("-fx-margin: 20");
+        buttons.setMaxWidth(200);
+        buttons.setHgap(20);
+        buttons.addRow(0, myMessages, allMessages);
+
+        GridPane userPane = new GridPane();
+        userPane.setVgap(20);
+        for (int i = 0; i < listOfUsers.size(); i++){
+            Label userLabel = new Label(listOfUsers.get(i));
+            userPane.addRow(i, userLabel);
+        }
+
+        BorderPane messagesPane = new BorderPane();
+        messagesPane.setMaxWidth(width - 200);
+        messagesPane.setTop(buttons);
+        messagesPane.setCenter(messagesArea);
+
+        root.setCenter(messagesPane);
+        root.setRight(userPane);
+        return root;
     }
 
-    private static Button getRegisterButton() {
-        Button loginButton = new Button("Register");
-        loginButton.setTextFill(Color.WHITE);
+    private static Button getButton(String text) {
+        Button loginButton = new Button(text);
+        loginButton.setTextFill(Color.DARKGRAY);
         loginButton.setMaxWidth(100);
         loginButton.setStyle("-fx-background-radius: 5px; " +
                 "-fx-background-color: CYAN;");
@@ -146,5 +196,27 @@ public class Graphics {
         warning.setVisible(false);
         return warning;
     }
+
+    private static EventHandler<ActionEvent> getMyMessAction(TextArea messagesArea, List<Message> listOfMy, User user){
+        return actionEvent -> {
+            messagesArea.setText("");
+
+            for (Message m : listOfMy){
+                if (m.getTo().equals(user.getLogin()))
+                    messagesArea.appendText(m.getDt() + " " + m.getFrom() + ": " + m.getText() + "\n");
+            }
+        };
+    }
+
+    private static EventHandler<ActionEvent> getAllMessAction(TextArea messagesArea, List<Message> listOfAll){
+        return actionEvent -> {
+            messagesArea.setText("");
+            for (Message m : listOfAll){
+                messagesArea.appendText(m.getDt() + " " + m.getFrom() + " to " + m.getTo() + ": " + m.getText() + "\n");
+            }
+        };
+    }
+
+
 
 }
