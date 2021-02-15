@@ -8,11 +8,9 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import mysql.entity.Message;
 import mysql.entity.User;
 
 import java.awt.*;
-import java.util.List;
 
 import static mysql.graphics.Graphics.*;
 import static mysql.helper.Help.*;
@@ -33,8 +31,8 @@ public class Main extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-        //BorderPane root = loginScreen();
-        BorderPane root = messagesScreen(dat.login(name, pass));
+        BorderPane root = loginScreen();
+        //BorderPane root = messagesScreen(dat.login(name, pass));
         Scene scene = new Scene(root, 400,400);
         loginButton.setOnMouseClicked(e -> {
             String login = loginInput.getText().trim();
@@ -54,6 +52,7 @@ public class Main extends Application {
                 double height = screenSize.getHeight();
                 Scene messagesScene = new Scene(messagesRoot, width, height);
                 stage.setScene(messagesScene);
+                stage.setX(0); stage.setY(0);
                 stage.setMaximized(true);
                 stage.setTitle("Messenger");
                 stage.show();
