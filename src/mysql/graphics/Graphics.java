@@ -139,7 +139,10 @@ public class Graphics {
 
         GridPane userPane = new GridPane();
         userPane.setStyle("-fx-padding: 0 10");
-        userPane.setVgap(20);
+        if (listOfUsers.size() > 16)
+            userPane.setVgap(5);
+        else
+            userPane.setVgap(20);
         for (int i = 0; i < listOfUsers.size(); i++){
             Label userLabel = new Label(listOfUsers.get(i));
             userLabel.setOnMouseClicked(e -> {
