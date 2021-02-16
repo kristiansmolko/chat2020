@@ -49,16 +49,20 @@ public class Graphics {
 
     public static BorderPane loginScreen(){
         BorderPane root = new BorderPane();
+        root.setStyle("-fx-background-color: black");
         Rectangle rect = new Rectangle();
-        rect.setStroke(Color.DARKGRAY);
-        rect.setFill(Color.AZURE);
+        rect.setFill(Color.DARKGREEN);
         rect.setWidth(200); rect.setHeight(200);
         rect.setTranslateX(0);
         rect.setTranslateY(0);
         FlowPane userNamePane = new FlowPane();
-        userNamePane.getChildren().addAll(new Label("Username"), loginInput);
+        Label userNameLabel = new Label("Username");
+        userNameLabel.setTextFill(Color.BLACK);
+        userNamePane.getChildren().addAll(userNameLabel, loginInput);
         FlowPane passwordPane = new FlowPane();
-        passwordPane.getChildren().addAll(new Label("Password"), loginPassword);
+        Label passwordLabel = new Label("Password");
+        passwordLabel.setTextFill(Color.BLACK);
+        passwordPane.getChildren().addAll(passwordLabel, loginPassword);
         BorderPane login = new BorderPane();
         login.setTranslateY(-20);
         login.setMaxWidth(100);
@@ -106,7 +110,8 @@ public class Graphics {
     public static BorderPane messagesScreen(User user){
         Database dat = new Database();
         BorderPane root = new BorderPane();
-        root.setStyle("-fx-padding: 20");
+        root.setStyle("-fx-padding: 20; " +
+                "-fx-background-color: darkgreen");
         List<Message> listOfAll = Help.getAllMessages();
         List<Message> listOfMy = Help.getMyMessages(user.getLogin());
         List<String> listOfUsers = Help.getUsers();
@@ -116,9 +121,10 @@ public class Graphics {
         double height = screenSize.getHeight();
 
         TextArea messagesArea = new TextArea();
-        messagesArea.setMaxWidth(width-200);
+        messagesArea.setMaxWidth(width-350);
         messagesArea.setMaxHeight(height-150);
         messagesArea.setStyle("-fx-margin: 20");
+        messagesArea.setFont(Font.font(12));
         messagesArea.setEditable(false);
         for (Message m : listOfAll)
             messagesArea.appendText(m.getDt() + " " + m.getFrom() + " to " + m.getTo() + ": " + m.getText() + "\n");
@@ -130,6 +136,7 @@ public class Graphics {
         allMessages.setOnAction(getAllMessAction(messagesArea, listOfAll));
 
         GridPane buttons = new GridPane();
+        buttons.setTranslateX(100);
         buttons.setStyle("-fx-margin: 20");
         buttons.setMaxWidth(200);
         buttons.setHgap(20);
@@ -138,6 +145,8 @@ public class Graphics {
         BorderPane rightSide = new BorderPane();
 
         GridPane userPane = new GridPane();
+        userPane.setTranslateX(-20);
+        userPane.setTranslateY(10);
         userPane.setStyle("-fx-padding: 0 10");
         if (listOfUsers.size() > 16)
             userPane.setVgap(5);
@@ -145,13 +154,17 @@ public class Graphics {
             userPane.setVgap(20);
         for (int i = 0; i < listOfUsers.size(); i++){
             Label userLabel = new Label(listOfUsers.get(i));
+            userLabel.setTextFill(Color.BLACK);
             userLabel.setOnMouseClicked(e -> {
                 dialogMessage(userLabel.getText(), user);
             });
             userPane.addRow(i, userLabel);
         }
 
-        rightSide.setTop(getLog(user));
+        BorderPane userLogPane = getLog(user);
+        userLogPane.setTranslateX(-20);
+
+        rightSide.setTop(userLogPane);
         rightSide.setCenter(userPane);
 
         BorderPane messagesPane = new BorderPane();
@@ -166,17 +179,17 @@ public class Graphics {
 
     private static Button getButton(String text) {
         Button loginButton = new Button(text);
-        loginButton.setTextFill(Color.DARKGRAY);
+        loginButton.setTextFill(Color.BLACK);
         loginButton.setMaxWidth(100);
         loginButton.setStyle("-fx-background-radius: 5px; " +
-                "-fx-background-color: CYAN;");
+                "-fx-background-color: limegreen;");
         return loginButton;
     }
 
     private static Label getSignUp() {
         Label signUp = new Label("Sign up");
-        signUp.setTextFill(Color.CYAN);
-        signUp.setFont(Font.font("Timew New Roman", FontWeight.EXTRA_BOLD, FontPosture.REGULAR, 12));
+        signUp.setTextFill(Color.BLACK);
+        signUp.setFont(Font.font("Timew New Roman", FontPosture.REGULAR, 10));
         signUp.setUnderline(true);
         signUp.setTranslateY(90);
         return signUp;
@@ -184,8 +197,8 @@ public class Graphics {
 
     private static Label getSignIn() {
         Label signIn = new Label("Sign in");
-        signIn.setTextFill(Color.CYAN);
-        signIn.setFont(Font.font("Timew New Roman", FontWeight.EXTRA_BOLD, FontPosture.REGULAR, 12));
+        signIn.setTextFill(Color.BLACK);
+        signIn.setFont(Font.font("Timew New Roman", FontPosture.REGULAR, 10));
         signIn.setUnderline(true);
         signIn.setTranslateY(90);
         return signIn;
@@ -303,6 +316,7 @@ public class Graphics {
         stage.initModality(Modality.APPLICATION_MODAL);
         Database dat = new Database();
         BorderPane root = new BorderPane();
+        root.setStyle("-fx-background-color: darkgreen");
         StackPane passwordsPane = new StackPane();
         GridPane passwords = new GridPane();
         passwords.setStyle("-fx-padding: 10");
@@ -339,6 +353,8 @@ public class Graphics {
         wrongTimer.setCycleCount(1);
 
         Button change = new Button("Change");
+        change.setTextFill(Color.BLACK);
+        change.setStyle("-fx-background-color: limegreen");
         change.setTranslateX(50);
         change.setOnAction(e -> {
             if (!newPassword.equals(newPassword2) || !oldPassword.equals(user.getPassword())){
@@ -371,28 +387,33 @@ public class Graphics {
         log.setStyle("-fx-padding: 10");
 
         StackPane userInt = new StackPane();
-        Circle circle = new Circle(30, Color.AZURE);
+        Circle circle = new Circle(30, Color.LIMEGREEN);
         Label userName = new Label(String.valueOf(user.getLogin().charAt(0)));
         userName.setFont(Font.font(20));
         userInt.getChildren().addAll(circle, userName);
 
         GridPane options = new GridPane();
+        options.setTranslateY(10);
         options.setStyle("-fx-padding: 20; " +
                 "-fx-border-style: solid;" +
                 "-fx-border-width: 1;" +
-                "-fx-border-color: gray");
+                "-fx-border-color: limegreen");
         options.setVgap(10);
         options.setVisible(false);
 
         userInt.setOnMouseClicked(e -> options.setVisible(true));
         Button changePass = new Button("Change password");
+        changePass.setTextFill(Color.BLACK);
         changePass.setOnAction(e -> {
             options.setVisible(false);
             changePassDialog(user);
         });
         Button logOut = new Button("Log out");
+        logOut.setTextFill(Color.BLACK);
         logOut.setOnAction(e -> System.exit(0));
-        options.addRow(0, new Label("Logged as: " + user.getLogin()));
+        Label logged = new Label("Logged as: " + user.getLogin());
+        logged.setTextFill(Color.BLACK);
+        options.addRow(0, logged);
         options.addRow(1, changePass);
         options.addRow(2, logOut);
 
