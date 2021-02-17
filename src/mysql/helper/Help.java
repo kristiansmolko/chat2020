@@ -15,7 +15,6 @@ public class Help {
     private static final String getUserId = "SELECT id, login FROM user WHERE login = ?";
     private static final String getUserName = "SELECT id, login FROM user WHERE id = ?";
     private static final String deleteMyMessages = "DELETE FROM message WHERE toUser = ?";
-    private static final String getMyMessages = "SELECT * FROM message WHERE toUser = ?";
     private static final String getAllMessages = "SELECT * FROM message";
     private static final String getUsers = "SELECT login from user";
 
@@ -26,8 +25,7 @@ public class Help {
 
     public static boolean isUser(String name){
         String query = "SELECT login FROM user";
-        try {
-            Connection connection = getConnection();
+        try (Connection connection = getConnection()) {
             if (connection != null){
                 PreparedStatement ps = connection.prepareStatement(query);
                 ResultSet rs = ps.executeQuery();
@@ -60,8 +58,7 @@ public class Help {
     }
 
     public static int getUserId(String login){
-        try {
-            Connection connection = getConnection();
+        try (Connection connection = getConnection()) {
             if (connection != null){
                 PreparedStatement ps = connection.prepareStatement(getUserId);
                 ps.setString(1, login);
@@ -80,8 +77,7 @@ public class Help {
     }
 
     public static void deleteAllMyMessages(String login){
-        try {
-            Connection connection = getConnection();
+        try (Connection connection = getConnection()) {
             if (connection != null){
                 PreparedStatement ps = connection.prepareStatement(deleteMyMessages);
                 ps.setInt(1, getUserId(login));
@@ -91,8 +87,7 @@ public class Help {
     }
 
     public static String getUserName(int id){
-        try {
-            Connection connection = getConnection();
+        try (Connection connection = getConnection()) {
             if (connection != null){
                 PreparedStatement ps = connection.prepareStatement(getUserName);
                 ps.setInt(1, id);
@@ -109,8 +104,7 @@ public class Help {
 
     public static List<String> getUsers(){
         List<String> list = new ArrayList<>();
-        try {
-            Connection connection = getConnection();
+        try (Connection connection = getConnection()) {
             if (connection != null){
                 PreparedStatement ps = connection.prepareStatement(getUsers);
                 ResultSet rs = ps.executeQuery();
@@ -123,33 +117,9 @@ public class Help {
         return list;
     }
 
-    public static List<Message> getMyMessages(String login){
-        List<Message> list = new ArrayList<>();
-        try {
-            Connection connection = getConnection();
-            if (connection != null){
-                PreparedStatement ps = connection.prepareStatement(getMyMessages);
-                ps.setInt(1, getUserId(login));
-                ResultSet rs = ps.executeQuery();
-                while (rs.next()){
-                    int idMessage = rs.getInt("id");
-                    java.util.Date time = rs.getTime("dt");
-                    String from = getUserName(rs.getInt("fromUser"));
-                    String to = getUserName(rs.getInt("toUser"));
-                    String text = rs.getString("text");
-                    list.add(new Message(idMessage, from, to, time, text));
-                }
-                connection.close();
-            }
-        } catch (Exception e) { e.printStackTrace(); }
-        //deleteAllMyMessages(login);
-        return list;
-    }
-
     public static List<Message> getAllMessages(){
         List<Message> list = new ArrayList<>();
-        try {
-            Connection connection = getConnection();
+        try (Connection connection = getConnection()){
             if (connection != null){
                 PreparedStatement ps = connection.prepareStatement(getAllMessages);
                 ResultSet rs = ps.executeQuery();
