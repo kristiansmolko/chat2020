@@ -4,16 +4,14 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.StackPane;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
@@ -47,7 +45,15 @@ public class Graphics {
     public static Label passwordsMatchLabel = getPasswordsMatchAlert();
     public static Label userExist = getUserExist();
 
-    private static List<String> usedColors = new ArrayList<>();
+    private static final List<String> usedColors = new ArrayList<>();
+    private static boolean hasColor = false;
+    private static List<Message> listOfAll;
+    private static List<String> listOfUsers;
+    private static List<String> listOfUserColors;
+
+    private static final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+    private static final double width = screenSize.getWidth();
+    private static final double height = screenSize.getHeight();
 
     public static BorderPane loginScreen(){
         BorderPane root = new BorderPane();
@@ -57,6 +63,7 @@ public class Graphics {
         rect.setWidth(200); rect.setHeight(200);
         rect.setTranslateX(0);
         rect.setTranslateY(0);
+
         FlowPane userNamePane = new FlowPane();
         Label userNameLabel = new Label("Username");
         userNameLabel.setTextFill(Color.BLACK);
@@ -65,6 +72,7 @@ public class Graphics {
         Label passwordLabel = new Label("Password");
         passwordLabel.setTextFill(Color.BLACK);
         passwordPane.getChildren().addAll(passwordLabel, loginPassword);
+
         BorderPane login = new BorderPane();
         login.setTranslateY(-20);
         login.setMaxWidth(100);
@@ -113,72 +121,15 @@ public class Graphics {
         BorderPane root = new BorderPane();
         root.setStyle("-fx-padding: 20; " +
                 "-fx-background-color: darkgreen");
-        List<Message> listOfAll = Help.getAllMessages();
-        List<Message> listOfMy = Help.getMyMessages(user.getLogin());
-        List<String> listOfUsers = Help.getUsers();
-        List<String> listOfUserColors = Json.getUserColors();
+        listOfAll = Help.getAllMessages();
+        listOfUsers = Help.getUsers();
+        listOfUserColors = Json.getUserColors();
 
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        double width = screenSize.getWidth();
-        double height = screenSize.getHeight();
+        TextArea messagesArea = getMessageArea();
 
-        TextArea messagesArea = new TextArea();
-        messagesArea.setMaxWidth(width-350);
-        messagesArea.setMaxHeight(height-150);
-        messagesArea.setStyle("-fx-margin: 20");
-        messagesArea.setFont(Font.font(12));
-        messagesArea.setEditable(false);
-        for (Message m : listOfAll)
-            messagesArea.appendText(m.getDt() + " " + m.getFrom() + " to " + m.getTo() + ": " + m.getText() + "\n");
+        GridPane buttons = getButtonsPane(messagesArea, user);
 
-        Button myMessages = getButton("My messages");
-        myMessages.setOnAction(getMyMessAction(messagesArea, listOfMy, user));
-
-        Button allMessages = getButton("All messages");
-        allMessages.setOnAction(getAllMessAction(messagesArea, listOfAll));
-
-        GridPane buttons = new GridPane();
-        buttons.setTranslateX(100);
-        buttons.setStyle("-fx-margin: 20");
-        buttons.setMaxWidth(200);
-        buttons.setHgap(20);
-        buttons.addRow(0, myMessages, allMessages);
-
-        BorderPane rightSide = new BorderPane();
-
-        GridPane userPane = new GridPane();
-        userPane.setTranslateX(-20);
-        userPane.setTranslateY(10);
-        userPane.setStyle("-fx-padding: 0 10");
-        if (listOfUsers.size() > 16)
-            userPane.setVgap(5);
-        else
-            userPane.setVgap(20);
-        for (int i = 0; i < listOfUsers.size(); i++){
-            Label userLabel = new Label(listOfUsers.get(i));
-            for (String key : listOfUserColors){
-                String[] temp = key.split(":");
-                if (listOfUsers.get(i).equals(temp[0])){
-                    userLabel.setStyle("-fx-background-color: " + temp[1]);
-                    usedColors.add(temp[1]);
-                }
-            }
-            userLabel.setTextFill(Color.BLACK);
-            userLabel.setOnMouseClicked(e -> {
-                if (!listOfUserColors.contains(userLabel.getText())) {
-                    colorPicker(userLabel.getText(), userLabel);
-                }
-                else
-                    dialogMessage(userLabel.getText(), user);
-            });
-            userPane.addRow(i, userLabel);
-        }
-
-        BorderPane userLogPane = getLog(user);
-        userLogPane.setTranslateX(-20);
-
-        rightSide.setTop(userLogPane);
-        rightSide.setCenter(userPane);
+        BorderPane rightSide = getRightSide(user);
 
         BorderPane messagesPane = new BorderPane();
         messagesPane.setMaxWidth(width - 200);
@@ -197,6 +148,16 @@ public class Graphics {
         loginButton.setStyle("-fx-background-radius: 5px; " +
                 "-fx-background-color: limegreen;");
         return loginButton;
+    }
+
+    private static Button getMessagesButton(String text){
+        Button button = new Button(text);
+        button.setTextFill(Color.BLACK);
+        button.setMaxWidth(200);
+        button.setStyle("-fx-background-radius: 5px; " +
+                "-fx-background-color: limegreen; " +
+                "-fx-padding: 10");
+        return button;
     }
 
     private static Label getSignUp() {
@@ -247,10 +208,9 @@ public class Graphics {
     private static EventHandler<ActionEvent> getMyMessAction(TextArea messagesArea, List<Message> listOfMy, User user){
         return actionEvent -> {
             messagesArea.setText("");
-
             for (Message m : listOfMy){
                 if (m.getTo().equals(user.getLogin()))
-                    messagesArea.appendText(m.getDt() + " " + m.getFrom() + ": " + m.getText() + "\n");
+                    messagesArea.appendText(m.getDt() + "-  from " + m.getFrom() + ": " + m.getText() + "\n");
             }
         };
     }
@@ -259,7 +219,17 @@ public class Graphics {
         return actionEvent -> {
             messagesArea.setText("");
             for (Message m : listOfAll){
-                messagesArea.appendText(m.getDt() + " " + m.getFrom() + " to " + m.getTo() + ": " + m.getText() + "\n");
+                messagesArea.appendText(m.getDt() + " - " + m.getFrom() + " to " + m.getTo() + ": " + m.getText() + "\n");
+            }
+        };
+    }
+
+    private static EventHandler<ActionEvent> getSentMessAction(TextArea messagesArea, List<Message> listOfSent, User user){
+        return actionEvent -> {
+            messagesArea.setText("");
+            for (Message m : listOfSent){
+                if (m.getFrom().equals(user.getLogin()))
+                    messagesArea.appendText(m.getDt() + " - to " + m.getTo() + ": " + m.getText() + "\n");
             }
         };
     }
@@ -397,6 +367,7 @@ public class Graphics {
 
     private static BorderPane getLog(User user){
         BorderPane log = new BorderPane();
+        log.setTranslateX(-20);
         log.setStyle("-fx-padding: 10");
 
         StackPane userInt = new StackPane();
@@ -471,6 +442,82 @@ public class Graphics {
         int a = ((int) Math.round(color.getOpacity() * 255));
 
         return String.format("#%08X", (r + g + b + a));
+    }
+
+    private static BorderPane getRightSide(User user){
+        BorderPane root = new BorderPane();
+        root.setTop(getLog(user));
+        root.setCenter(getListView(user));
+        return root;
+    }
+
+    private static TextArea getMessageArea(){
+        TextArea messagesArea = new TextArea();
+        messagesArea.setMaxWidth(width-350);
+        messagesArea.setMaxHeight(height-150);
+        messagesArea.setStyle("-fx-margin: 20");
+        messagesArea.setFont(Font.font(12));
+        messagesArea.setEditable(false);
+        for (Message m : listOfAll)
+            messagesArea.appendText(m.getDt() + " " + m.getFrom() + " to " + m.getTo() + ": " + m.getText() + "\n");
+        return messagesArea;
+    }
+
+    private static GridPane getButtonsPane(TextArea messagesArea, User user){
+        GridPane buttons = new GridPane();
+        buttons.setTranslateX(80);
+        buttons.setStyle("-fx-margin: 20");
+        buttons.setMaxWidth(width - 350);
+        buttons.setHgap(20);
+
+        Button myMessages = getMessagesButton("My messages");
+        myMessages.setOnAction(getMyMessAction(messagesArea, listOfAll, user));
+
+        Button allMessages = getMessagesButton("All messages");
+        allMessages.setOnAction(getAllMessAction(messagesArea, listOfAll));
+
+        Button sentMessages = getMessagesButton("Sent messages");
+        sentMessages.setOnAction(getSentMessAction(messagesArea, listOfAll, user));
+
+        buttons.addRow(0, myMessages, allMessages, sentMessages);
+        return buttons;
+    }
+
+    private static ListView getListView(User user){
+        ListView userPane = new ListView();
+        userPane.setTranslateX(-20);
+        userPane.setTranslateY(20);
+        userPane.setBorder(null);
+        userPane.setMaxWidth(200);
+        userPane.setMaxHeight(400);
+        userPane.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+        for (int i = 0; i < listOfUsers.size(); i++){
+            Label name = new Label(listOfUsers.get(i));
+            name.setMaxWidth(200);
+            for (String key : listOfUserColors){
+                String[] temp = key.split(":");
+                if (listOfUsers.get(i).equals(temp[0])){
+                    name.setStyle("-fx-background-color: " + temp[1]);
+                    usedColors.add(temp[1]);
+                }
+            }
+            userPane.getItems().add(name);
+
+            userPane.setOnMouseClicked(e -> {
+                Label label = (Label) userPane.getSelectionModel().getSelectedItem();
+                hasColor = false;
+                for (String key : listOfUserColors) {
+                    String[] temp = key.split(":");
+                    if (temp[0].equals(label.getText())) {
+                        dialogMessage(label.getText(), user);
+                        hasColor = true;
+                    }
+                }
+                if (!hasColor)
+                    colorPicker(label.getText(), label);
+            });
+        }
+        return userPane;
     }
 
 }
