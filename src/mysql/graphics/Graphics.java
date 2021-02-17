@@ -3,7 +3,6 @@ package mysql.graphics;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
-import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -20,7 +19,6 @@ import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
-import javafx.scene.text.FontWeight;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Duration;
@@ -28,8 +26,10 @@ import mysql.Database;
 import mysql.entity.Message;
 import mysql.entity.User;
 import mysql.helper.Help;
+import mysql.helper.Json;
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Graphics {
@@ -46,6 +46,8 @@ public class Graphics {
     public static Label warningLogin = getWarningLogin();
     public static Label passwordsMatchLabel = getPasswordsMatchAlert();
     public static Label userExist = getUserExist();
+
+    private static List<String> usedColors = new ArrayList<>();
 
     public static BorderPane loginScreen(){
         BorderPane root = new BorderPane();
@@ -108,13 +110,13 @@ public class Graphics {
     }
 
     public static BorderPane messagesScreen(User user){
-        Database dat = new Database();
         BorderPane root = new BorderPane();
         root.setStyle("-fx-padding: 20; " +
                 "-fx-background-color: darkgreen");
         List<Message> listOfAll = Help.getAllMessages();
         List<Message> listOfMy = Help.getMyMessages(user.getLogin());
         List<String> listOfUsers = Help.getUsers();
+        List<String> listOfUserColors = Json.getUserColors();
 
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         double width = screenSize.getWidth();
@@ -154,9 +156,20 @@ public class Graphics {
             userPane.setVgap(20);
         for (int i = 0; i < listOfUsers.size(); i++){
             Label userLabel = new Label(listOfUsers.get(i));
+            for (String key : listOfUserColors){
+                String[] temp = key.split(":");
+                if (listOfUsers.get(i).equals(temp[0])){
+                    userLabel.setStyle("-fx-background-color: " + temp[1]);
+                    usedColors.add(temp[1]);
+                }
+            }
             userLabel.setTextFill(Color.BLACK);
             userLabel.setOnMouseClicked(e -> {
-                dialogMessage(userLabel.getText(), user);
+                if (!listOfUserColors.contains(userLabel.getText())) {
+                    colorPicker(userLabel.getText(), userLabel);
+                }
+                else
+                    dialogMessage(userLabel.getText(), user);
             });
             userPane.addRow(i, userLabel);
         }
@@ -420,6 +433,44 @@ public class Graphics {
         log.setTop(userInt);
         log.setCenter(options);
         return log;
+    }
+
+    private static void colorPicker(String name, Label label){
+        Stage stage = new Stage();
+        stage.initModality(Modality.APPLICATION_MODAL);
+        BorderPane root = new BorderPane();
+        ColorPicker colorPicker = new ColorPicker();
+        Label nameLabel = new Label(name);
+        Button set = new Button("Set");
+
+        colorPicker.setOnAction(e -> {
+            nameLabel.setStyle("-fx-background-color: " + toHexString(colorPicker.getValue()));
+        });
+
+        set.setOnAction(e -> {
+            String newUser = name + ":" + toHexString(colorPicker.getValue());
+            Json.addToColors(newUser);
+            label.setStyle("-fx-background-color: " + toHexString(colorPicker.getValue()));
+            stage.close();
+        });
+
+        root.setTop(nameLabel);
+        root.setCenter(colorPicker);
+        root.setBottom(set);
+
+        Scene scene = new Scene(root, 200, 200);
+        stage.setScene(scene);
+        stage.setTitle("Choose color for new user");
+        stage.showAndWait();
+    }
+
+    private static String toHexString(Color color) {
+        int r = ((int) Math.round(color.getRed()     * 255)) << 24;
+        int g = ((int) Math.round(color.getGreen()   * 255)) << 16;
+        int b = ((int) Math.round(color.getBlue()    * 255)) << 8;
+        int a = ((int) Math.round(color.getOpacity() * 255));
+
+        return String.format("#%08X", (r + g + b + a));
     }
 
 }
