@@ -273,7 +273,9 @@ public class Graphics {
         messageText.setMaxSize(250,250);
         Button sendMessage = new Button("Send");
         sendMessage.setOnAction(e -> {
-            boolean sent = dat.sendMessage(user.getId(), name, messageText.getText());
+            boolean sent = false;
+            if (!(messageText.getText().length() > 255))
+                sent = dat.sendMessage(user.getId(), name, messageText.getText());
             if (sent)
                 timer.play();
             else {
