@@ -1,14 +1,10 @@
 package mysql;
 
-import mysql.entity.Message;
 import mysql.entity.User;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 
 import static mysql.helper.Help.*;
 
@@ -16,8 +12,7 @@ public class Database {
     public User login(String name, String password){
         String query = "SELECT id, login, password FROM user " +
                 "WHERE login = ?";
-        try {
-            Connection connection = getConnection();
+        try (Connection connection = getConnection()) {
             if (connection != null){
                 PreparedStatement ps = connection.prepareStatement(query);
                 ps.setString(1, name);
@@ -49,8 +44,7 @@ public class Database {
             System.out.println("\033[31mThis user already exist!\033[0m");
             return;
         }
-        try {
-            Connection connection = getConnection();
+        try (Connection connection = getConnection()) {
             if (connection != null){
                 String registerUser = "INSERT INTO user(login, password) VALUES(?, ?)";
                 PreparedStatement ps = connection.prepareStatement(registerUser);
@@ -83,8 +77,7 @@ public class Database {
         }
         if (login(name, oldPassword) == null)
             return;
-        try {
-            Connection connection = getConnection();
+        try (Connection connection = getConnection()) {
             if (connection != null){
                 //in javafx you will be asked for name once again
                 PreparedStatement ps = connection.prepareStatement(query);
@@ -105,25 +98,22 @@ public class Database {
         int to = getUserId(toUser);
         if (to == -1)
             return false;
-        try {
-             Connection connection = getConnection();
-             if (connection == null){
-                 System.out.println("\033[31mConnection lost!\033[0m");
-                 return false;
+        try (Connection connection = getConnection()) {
+             if (connection != null) {
+                 String newMessage = "INSERT INTO message(fromUser, toUser, text) VALUES(?, ?, ?)";
+                 PreparedStatement ps = connection.prepareStatement(newMessage);
+                 ps.setInt(1, from);
+                 ps.setInt(2, to);
+                 ps.setString(3, text);
+                 int result = ps.executeUpdate();
+                 if (result < 1) {
+                     System.out.println("\033[31mMessage not sent!\033[0m");
+                 } else {
+                     System.out.println("\033[34mMessage sent!\033[0m");
+                     return true;
+                 }
+                 connection.close();
              }
-            String newMessage = "INSERT INTO message(fromUser, toUser, text) VALUES(?, ?, ?)";
-            PreparedStatement ps = connection.prepareStatement(newMessage);
-             ps.setInt(1, from);
-             ps.setInt(2, to);
-             ps.setString(3, text);
-             int result = ps.executeUpdate();
-             if (result < 1){
-                 System.out.println("\033[31mMessage not sent!\033[0m");
-             } else {
-                 System.out.println("\033[34mMessage sent!\033[0m");
-                 return true;
-             }
-            connection.close();
         } catch (Exception e) { e.printStackTrace(); }
         return false;
     }
