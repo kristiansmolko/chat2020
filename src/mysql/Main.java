@@ -4,9 +4,7 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import mysql.entity.User;
@@ -15,19 +13,14 @@ import java.awt.*;
 
 import static mysql.graphics.Graphics.*;
 import static mysql.helper.Help.*;
-import static mysql.helper.Json.*;
 
 public class Main extends Application {
     Database dat = new Database();
     String name = "kristianS";
     String pass = TopSecretData.getChatPass();
+    BorderPane messagesRoot;
 
-    public static void main(String[] args) {
-        //createJson();
-        //System.out.println(getUserColors());
-
-        launch(args);
-    }
+    public static void main(String[] args) { launch(args); }
 
     @Override
     public void start(Stage stage) throws Exception {
@@ -46,7 +39,7 @@ public class Main extends Application {
                 timer.setCycleCount(1);
                 timer.play();
             } else {
-                BorderPane messagesRoot = messagesScreen(user);
+                messagesRoot = messagesScreen(user);
                 Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
                 double width = screenSize.getWidth();
                 double height = screenSize.getHeight();
