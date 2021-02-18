@@ -11,6 +11,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.image.ImageView;
+import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -26,7 +28,6 @@ import mysql.entity.User;
 import mysql.helper.Help;
 import mysql.helper.Json;
 
-import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -51,6 +52,8 @@ public class Graphics {
 
     private static TextArea messagesArea;
     private static GridPane buttons;
+    private static StackPane messages = new StackPane();
+    private static ImageView img = getWelcome();
 
     private static final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
     private static final double width = screenSize.getWidth();
@@ -124,6 +127,7 @@ public class Graphics {
                 "-fx-background-color: darkgreen");
 
         messagesArea = getMessageArea();
+        messages.getChildren().addAll(messagesArea, img);
 
         buttons = getButtonsPane(messagesArea, user);
 
@@ -132,7 +136,7 @@ public class Graphics {
         BorderPane messagesPane = new BorderPane();
         messagesPane.setMaxWidth(width - 200);
         messagesPane.setTop(buttons);
-        messagesPane.setCenter(messagesArea);
+        messagesPane.setCenter(messages);
 
         root.setCenter(messagesPane);
         root.setRight(rightSide);
@@ -205,6 +209,7 @@ public class Graphics {
 
     private static EventHandler<ActionEvent> getMyMessAction(TextArea messagesArea, User user){
         return actionEvent -> {
+            messages.getChildren().remove(img);
             List<Message> listOfNew = Help.getMyMessages(user.getId());
             messagesArea.setText("");
             if (!listOfNew.isEmpty())
@@ -219,6 +224,7 @@ public class Graphics {
 
     private static EventHandler<ActionEvent> getAllMyMessAction(TextArea messagesArea, User user){
         return actionEvent -> {
+            messages.getChildren().remove(img);
             List<Message> listOfAll = Help.getMessagesArchive(user.getId());
             messagesArea.setText("");
             if (listOfAll.size() < 20)
@@ -237,6 +243,7 @@ public class Graphics {
 
     private static EventHandler<ActionEvent> getSentMessAction(TextArea messagesArea, User user){
         return actionEvent -> {
+            messages.getChildren().remove(img);
             List<Message> listOfSent = Help.getSentMessages(user.getId());
             messagesArea.setText("");
             if (listOfSent.size() < 20)
@@ -431,7 +438,12 @@ public class Graphics {
         options.setVgap(10);
         options.setVisible(false);
 
-        userInt.setOnMouseClicked(e -> options.setVisible(true));
+        userInt.setOnMouseClicked(e -> {
+            if (options.isVisible())
+                options.setVisible(false);
+            else
+                options.setVisible(true);
+        });
         Button changePass = new Button("Change password");
         changePass.setTextFill(Color.BLACK);
         changePass.setOnAction(e -> {
@@ -499,8 +511,8 @@ public class Graphics {
 
     private static TextArea getMessageArea(){
         TextArea messagesArea = new TextArea();
-        messagesArea.setMaxWidth(width-350);
-        messagesArea.setMaxHeight(height-150);
+        messagesArea.setMaxWidth(width - 350);
+        messagesArea.setMaxHeight(height - 150);
         messagesArea.setStyle("-fx-margin: 20");
         messagesArea.setFont(Font.font("Doh", 12));
         messagesArea.setEditable(false);
@@ -509,7 +521,8 @@ public class Graphics {
 
     private static GridPane getButtonsPane(TextArea messagesArea, User user){
         GridPane buttons = new GridPane();
-        buttons.setTranslateX(80);
+        buttons.setTranslateX(70);
+        buttons.setTranslateY(-10);
         buttons.setStyle("-fx-margin: 20");
         buttons.setMaxWidth(width - 350);
         buttons.setHgap(20);
@@ -561,7 +574,6 @@ public class Graphics {
     private static ListView getListView(User user){
         ListView userPane = new ListView();
         userPane.setTranslateX(-20);
-        userPane.setTranslateY(20);
         userPane.setBorder(null);
         userPane.setMaxWidth(200);
         userPane.setMaxHeight(400);
@@ -658,5 +670,12 @@ public class Graphics {
         list.getItems().addAll(col1, col2, col3, col4, col5, col6, col7, col8,
                 col9, col10, col11, col12, col13, col14, col15, col16);
         return list;
+    }
+
+    private static ImageView getWelcome(){
+        ImageView img = new ImageView(new Image("welcome.png"));
+        img.setFitWidth(width - 350);
+        img.setFitHeight(height - 150);
+        return img;
     }
 }
