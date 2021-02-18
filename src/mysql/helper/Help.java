@@ -8,6 +8,8 @@ import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.*;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -130,7 +132,7 @@ public class Help {
                 ResultSet rs = ps.executeQuery();
                 while (rs.next()) {
                     int idMessage = rs.getInt("id");
-                    Date time = rs.getTime("dt");
+                    Date time = rs.getTimestamp("dt");
                     String from = getUserName(rs.getInt("fromUser"));
                     String to = getUserName(rs.getInt("toUser"));
                     String text = rs.getString("text");
@@ -152,7 +154,7 @@ public class Help {
                 ResultSet rs = ps.executeQuery();
                 while (rs.next()){
                     int idMessage = rs.getInt("id");
-                    Date time = rs.getTime("dt");
+                    Date time = rs.getTimestamp("dt");
                     String from = getUserName(rs.getInt("fromUser"));
                     String to = getUserName(rs.getInt("toUser"));
                     String text = rs.getString("text");
@@ -173,7 +175,7 @@ public class Help {
                 ResultSet rs = ps.executeQuery();
                 while (rs.next()){
                     int idMessage = rs.getInt("id");
-                    Date time = rs.getTime("dt");
+                    Date time = rs.getTimestamp("dt");
                     String from = getUserName(rs.getInt("fromUser"));
                     String to = getUserName(rs.getInt("toUser"));
                     String text = rs.getString("text");
@@ -200,5 +202,25 @@ public class Help {
             }
         } catch (Exception e) { e.printStackTrace(); }
         return false;
+    }
+
+    public static String getTime(Date date){
+        Date today = new Date();
+        Date mes = new Date(date.getTime());
+        DateFormat y = new SimpleDateFormat("yyyy");
+        DateFormat m = new SimpleDateFormat("MM");
+        DateFormat d = new SimpleDateFormat("dd");
+        DateFormat day = new SimpleDateFormat("yyyy-MM-dd");
+        DateFormat hour = new SimpleDateFormat("hh:mm:ss");
+        int todayYear = Integer.parseInt(y.format(today));
+        int todayMonth = Integer.parseInt(m.format(today));
+        int todayDay = Integer.parseInt(d.format(today));
+        int messYear = Integer.parseInt(y.format(mes));
+        int messMon = Integer.parseInt(m.format(mes));
+        int messDay = Integer.parseInt(d.format(mes));
+        if (todayYear == messYear && todayMonth == messMon && todayDay == messDay)
+            return hour.format(mes);
+        else
+            return day.format(mes);
     }
 }
