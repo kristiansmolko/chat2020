@@ -304,11 +304,35 @@ public class Graphics {
             }
         });
 
-        dialog.setTop(nameLabel);
+        Button emojis = new Button("Emojis");
+
+
+        BorderPane buttons = new BorderPane();
+        buttons.setLeft(sendMessage);
+        buttons.setRight(emojis);
+
+        ListView list = getEmojiList(messageText);
+        list.setEditable(true);
+        list.setTranslateY(70);
+        list.setMaxSize(200, 70);
+
         StackPane messageArea = new StackPane();
         messageArea.getChildren().addAll(messageText, messageSent, wrongMessage);
+
+        emojis.setOnAction(e -> {
+            if (!list.isEditable()) {
+                messageArea.getChildren().remove(list);
+                list.setEditable(true);
+            }
+            else {
+                messageArea.getChildren().addAll(list);
+                list.setEditable(false);
+            }
+        });
+
+        dialog.setTop(nameLabel);
         dialog.setCenter(messageArea);
-        dialog.setBottom(sendMessage);
+        dialog.setBottom(buttons);
 
         Scene scene = new Scene(dialog, 300, 300);
         stage.setScene(scene);
@@ -571,5 +595,68 @@ public class Graphics {
             });
         }
         return userPane;
+    }
+
+    private static GridPane getEmojiGrid(TextArea area, int num){
+        GridPane grid = new GridPane();
+        num*=10;
+        Button b1 = new Button(String.format("%c", 0x1F600+num));
+        Button b2 = new Button(String.format("%c", 0x1F601+num));
+        Button b3 = new Button(String.format("%c", 0x1F602+num));
+        Button b4 = new Button(String.format("%c", 0x1F603+num));
+        Button b5 = new Button(String.format("%c", 0x1F604+num));
+        Button b6 = new Button(String.format("%c", 0x1F605+num));
+        grid.addRow(0, b1, b2, b3, b4, b5, b6);
+        int useNum = num;
+        b1.setOnAction(e -> area.appendText(String.format("%c", 0x1F600+useNum)));
+        b2.setOnAction(e -> area.appendText(String.format("%c", 0x1F601+useNum)));
+        b3.setOnAction(e -> area.appendText(String.format("%c", 0x1F602+useNum)));
+        b4.setOnAction(e -> area.appendText(String.format("%c", 0x1F603+useNum)));
+        b5.setOnAction(e -> area.appendText(String.format("%c", 0x1F604+useNum)));
+        b6.setOnAction(e -> area.appendText(String.format("%c", 0x1F605+useNum)));
+        return grid;
+    }
+
+    private static GridPane getEmojiGrid2(TextArea area, int num){
+        GridPane grid = new GridPane();
+        num *= 10;
+        Button b7 = new Button(String.format("%c", 0x1F606+num));
+        Button b8 = new Button(String.format("%c", 0x1F607+num));
+        Button b9 = new Button(String.format("%c", 0x1F608+num));
+        Button b10 = new Button(String.format("%c", 0x1F609+num));
+        Button b11 = new Button(String.format("%c", 0x1F60A+num));
+        Button b12 = new Button(String.format("%c", 0x1F60B+num));
+        grid.addRow(0, b7, b8, b9, b10, b11, b12);
+        int useNum = num;
+        b7.setOnAction(e -> area.appendText(String.format("%c", 0x1F606+useNum)));
+        b8.setOnAction(e -> area.appendText(String.format("%c", 0x1F607+useNum)));
+        b9.setOnAction(e -> area.appendText(String.format("%c", 0x1F608+useNum)));
+        b10.setOnAction(e -> area.appendText(String.format("%c", 0x1F609+useNum)));
+        b11.setOnAction(e -> area.appendText(String.format("%c", 0x1F60A+useNum)));
+        b12.setOnAction(e -> area.appendText(String.format("%c", 0x1F60B+useNum)));
+        return grid;
+    }
+
+    private static ListView getEmojiList(TextArea messageText){
+        ListView list = new ListView();
+        GridPane col1 = getEmojiGrid(messageText, 0);
+        GridPane col2 = getEmojiGrid2(messageText, 0);
+        GridPane col3 = getEmojiGrid(messageText, 1);
+        GridPane col4 = getEmojiGrid2(messageText, 1);
+        GridPane col5 = getEmojiGrid(messageText, 2);
+        GridPane col6 = getEmojiGrid2(messageText, 2);
+        GridPane col7 = getEmojiGrid(messageText, 3);
+        GridPane col8 = getEmojiGrid2(messageText, 3);
+        GridPane col9 = getEmojiGrid2(messageText, 4);
+        GridPane col10 = getEmojiGrid2(messageText, 4);
+        GridPane col11 = getEmojiGrid2(messageText, 5);
+        GridPane col12 = getEmojiGrid2(messageText, 5);
+        GridPane col13 = getEmojiGrid2(messageText, 6);
+        GridPane col14 = getEmojiGrid2(messageText, 6);
+        GridPane col15 = getEmojiGrid2(messageText, 7);
+        GridPane col16 = getEmojiGrid2(messageText, 7);
+        list.getItems().addAll(col1, col2, col3, col4, col5, col6, col7, col8,
+                col9, col10, col11, col12, col13, col14, col15, col16);
+        return list;
     }
 }
