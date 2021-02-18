@@ -2,6 +2,7 @@ package mysql.helper;
 
 import mysql.TopSecretData;
 import mysql.entity.Message;
+import mysql.entity.User;
 
 import java.math.BigInteger;
 import java.security.MessageDigest;
@@ -16,7 +17,10 @@ public class Help {
     private static final String getUserName = "SELECT id, login FROM user WHERE id = ?";
     private static final String deleteMyMessages = "DELETE FROM message WHERE toUser = ?";
     private static final String getAllMessages = "SELECT * FROM message";
-    private static final String getUsers = "SELECT login from user";
+    private static final String getMyMessages = "SELECT * FROM message WHERE toUser = ?";
+    private static final String getSentMessages = "SELECT * FROM archive WHERE fromUser = ?";
+    private static final String getUsers = "SELECT login FROM user";
+    private static final String getArchiveMess = "SELECT * FROM archive WHERE toUser = ?";
 
     public static Connection getConnection() throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
@@ -76,11 +80,11 @@ public class Help {
         return -1;
     }
 
-    public static void deleteAllMyMessages(String login){
+    public static void deleteAllMyMessages(int id){
         try (Connection connection = getConnection()) {
             if (connection != null){
                 PreparedStatement ps = connection.prepareStatement(deleteMyMessages);
-                ps.setInt(1, getUserId(login));
+                ps.setInt(1, id);
                 ps.executeUpdate();
             }
         } catch (Exception e) { e.printStackTrace(); }
@@ -117,11 +121,34 @@ public class Help {
         return list;
     }
 
-    public static List<Message> getAllMessages(){
+    public static List<Message> getMyMessages(int toUser){
+        List<Message> list = new ArrayList<>();
+        try (Connection connection = getConnection()) {
+            if (connection != null) {
+                PreparedStatement ps = connection.prepareStatement(getMyMessages);
+                ps.setInt(1, toUser);
+                ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+                    int idMessage = rs.getInt("id");
+                    Date time = rs.getTime("dt");
+                    String from = getUserName(rs.getInt("fromUser"));
+                    String to = getUserName(rs.getInt("toUser"));
+                    String text = rs.getString("text");
+                    list.add(new Message(idMessage, from, to, time, text));
+                }
+                connection.close();
+            }
+        } catch (Exception e) { e.printStackTrace(); }
+        deleteAllMyMessages(toUser);
+        return list;
+    }
+
+    public static List<Message> getMessagesArchive(int toUser){
         List<Message> list = new ArrayList<>();
         try (Connection connection = getConnection()){
             if (connection != null){
-                PreparedStatement ps = connection.prepareStatement(getAllMessages);
+                PreparedStatement ps = connection.prepareStatement(getArchiveMess);
+                ps.setInt(1, toUser);
                 ResultSet rs = ps.executeQuery();
                 while (rs.next()){
                     int idMessage = rs.getInt("id");
@@ -137,4 +164,41 @@ public class Help {
         return list;
     }
 
+    public static List<Message> getSentMessages(int fromUser){
+        List<Message> list = new ArrayList<>();
+        try (Connection connection = getConnection()){
+            if (connection != null){
+                PreparedStatement ps = connection.prepareStatement(getSentMessages);
+                ps.setInt(1, fromUser);
+                ResultSet rs = ps.executeQuery();
+                while (rs.next()){
+                    int idMessage = rs.getInt("id");
+                    Date time = rs.getTime("dt");
+                    String from = getUserName(rs.getInt("fromUser"));
+                    String to = getUserName(rs.getInt("toUser"));
+                    String text = rs.getString("text");
+                    list.add(new Message(idMessage, from, to, time, text));
+                }
+                connection.close();
+            }
+        } catch (Exception e) { e.printStackTrace(); }
+        deleteAllMyMessages(fromUser);
+        return list;
+    }
+
+    public static boolean newMessage(int toUser){
+        try (Connection connection = getConnection()){
+            if (connection != null){
+                PreparedStatement ps = connection.prepareStatement(getMyMessages);
+                ps.setInt(1, toUser);
+                ResultSet rs = ps.executeQuery();
+                if (rs.next()) {
+                    connection.close();
+                    return true;
+                }
+                connection.close();
+            }
+        } catch (Exception e) { e.printStackTrace(); }
+        return false;
+    }
 }
