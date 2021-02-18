@@ -1,10 +1,10 @@
 package mysql.graphics;
 
+import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.Button;
@@ -47,9 +47,9 @@ public class Graphics {
 
     private static final List<String> usedColors = new ArrayList<>();
     private static boolean hasColor = false;
-    private static List<Message> listOfAll;
-    private static List<String> listOfUsers;
-    private static List<String> listOfUserColors;
+
+    private static TextArea messagesArea;
+    private static GridPane buttons;
 
     private static final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
     private static final double width = screenSize.getWidth();
@@ -121,13 +121,10 @@ public class Graphics {
         BorderPane root = new BorderPane();
         root.setStyle("-fx-padding: 20; " +
                 "-fx-background-color: darkgreen");
-        listOfAll = Help.getAllMessages();
-        listOfUsers = Help.getUsers();
-        listOfUserColors = Json.getUserColors();
 
-        TextArea messagesArea = getMessageArea();
+        messagesArea = getMessageArea();
 
-        GridPane buttons = getButtonsPane(messagesArea, user);
+        buttons = getButtonsPane(messagesArea, user);
 
         BorderPane rightSide = getRightSide(user);
 
@@ -205,31 +202,34 @@ public class Graphics {
         return warning;
     }
 
-    private static EventHandler<ActionEvent> getMyMessAction(TextArea messagesArea, List<Message> listOfMy, User user){
+    private static EventHandler<ActionEvent> getMyMessAction(TextArea messagesArea, User user){
         return actionEvent -> {
+            List<Message> listOfNew = Help.getMyMessages(user.getId());
             messagesArea.setText("");
-            for (Message m : listOfMy){
+            for (Message m : listOfNew){
                 if (m.getTo().equals(user.getLogin()))
                     messagesArea.appendText(m.getDt() + "-  from " + m.getFrom() + ": " + m.getText() + "\n");
             }
         };
     }
 
-    private static EventHandler<ActionEvent> getAllMessAction(TextArea messagesArea, List<Message> listOfAll){
+    private static EventHandler<ActionEvent> getAllMyMessAction(TextArea messagesArea, User user){
         return actionEvent -> {
+            List<Message> listOfAll = Help.getMessagesArchive(user.getId());
             messagesArea.setText("");
             for (Message m : listOfAll){
-                messagesArea.appendText(m.getDt() + " - " + m.getFrom() + " to " + m.getTo() + ": " + m.getText() + "\n");
+                if (m.getTo().equals(user.getLogin()))
+                    messagesArea.appendText(m.getDt() + "-  from " + m.getFrom() + ": " + m.getText() + "\n");
             }
         };
     }
 
-    private static EventHandler<ActionEvent> getSentMessAction(TextArea messagesArea, List<Message> listOfSent, User user){
+    private static EventHandler<ActionEvent> getSentMessAction(TextArea messagesArea, User user){
         return actionEvent -> {
+            List<Message> listOfSent = Help.getSentMessages(user.getId());
             messagesArea.setText("");
             for (Message m : listOfSent){
-                if (m.getFrom().equals(user.getLogin()))
-                    messagesArea.appendText(m.getDt() + " - to " + m.getTo() + ": " + m.getText() + "\n");
+                messagesArea.appendText(m.getDt() + "-  from " + m.getFrom() + ": " + m.getText() + "\n");
             }
         };
     }
@@ -460,9 +460,9 @@ public class Graphics {
         messagesArea.setStyle("-fx-margin: 20");
         messagesArea.setFont(Font.font(12));
         messagesArea.setEditable(false);
-        for (Message m : listOfAll)
+        /*for (Message m : listOfAll)
             messagesArea.appendText(m.getDt() + " " + m.getFrom() + " to " + m.getTo() + ": " + m.getText() + "\n");
-        return messagesArea;
+        */return messagesArea;
     }
 
     private static GridPane getButtonsPane(TextArea messagesArea, User user){
@@ -473,13 +473,44 @@ public class Graphics {
         buttons.setHgap(20);
 
         Button myMessages = getMessagesButton("My messages");
-        myMessages.setOnAction(getMyMessAction(messagesArea, listOfAll, user));
+        myMessages.setOnAction(getMyMessAction(messagesArea, user));
+
+        Timeline timer = new Timeline(
+                new KeyFrame(Duration.millis(100), e2 -> {
+                    myMessages.setStyle("-fx-background-radius: 5px; " +
+                            "-fx-background-color: limegreen; " +
+                            "-fx-padding: 10");
+                }),
+                new KeyFrame(Duration.millis(2000), e2 -> {
+                    myMessages.setStyle("-fx-background-radius: 5px; " +
+                            "-fx-padding: 10; " +
+                            "-fx-background-color: red");
+                })
+        );
+        timer.setCycleCount(Animation.INDEFINITE);
+
+        if (Help.newMessage(user.getId())) {
+            timer.play();
+        }
+
+        myMessages.setOnMouseClicked(e -> timer.stop());
+
+        Timeline checkDat = new Timeline(
+                new KeyFrame(Duration.millis(1), e2 -> {}),
+                new KeyFrame(Duration.millis(60000), e2 -> {
+                    System.out.println("New message!");
+                    if(Help.newMessage(user.getId()))
+                        timer.play();
+                })
+        );
+        checkDat.setCycleCount(Animation.INDEFINITE);
+        checkDat.play();
 
         Button allMessages = getMessagesButton("All messages");
-        allMessages.setOnAction(getAllMessAction(messagesArea, listOfAll));
+        allMessages.setOnAction(getAllMyMessAction(messagesArea, user));
 
         Button sentMessages = getMessagesButton("Sent messages");
-        sentMessages.setOnAction(getSentMessAction(messagesArea, listOfAll, user));
+        sentMessages.setOnAction(getSentMessAction(messagesArea, user));
 
         buttons.addRow(0, myMessages, allMessages, sentMessages);
         return buttons;
@@ -493,6 +524,8 @@ public class Graphics {
         userPane.setMaxWidth(200);
         userPane.setMaxHeight(400);
         userPane.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+        List<String> listOfUsers = Help.getUsers();
+        List<String> listOfUserColors = Json.getUserColors();
         for (int i = 0; i < listOfUsers.size(); i++){
             Label name = new Label(listOfUsers.get(i));
             name.setMaxWidth(200);
@@ -521,5 +554,4 @@ public class Graphics {
         }
         return userPane;
     }
-
 }
