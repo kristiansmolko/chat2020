@@ -659,13 +659,13 @@ public class Graphics {
         GridPane col6 = getEmojiGrid2(messageText, 2);
         GridPane col7 = getEmojiGrid(messageText, 3);
         GridPane col8 = getEmojiGrid2(messageText, 3);
-        GridPane col9 = getEmojiGrid2(messageText, 4);
+        GridPane col9 = getEmojiGrid(messageText, 4);
         GridPane col10 = getEmojiGrid2(messageText, 4);
-        GridPane col11 = getEmojiGrid2(messageText, 5);
+        GridPane col11 = getEmojiGrid(messageText, 5);
         GridPane col12 = getEmojiGrid2(messageText, 5);
-        GridPane col13 = getEmojiGrid2(messageText, 6);
+        GridPane col13 = getEmojiGrid(messageText, 6);
         GridPane col14 = getEmojiGrid2(messageText, 6);
-        GridPane col15 = getEmojiGrid2(messageText, 7);
+        GridPane col15 = getEmojiGrid(messageText, 7);
         GridPane col16 = getEmojiGrid2(messageText, 7);
         list.getItems().addAll(col1, col2, col3, col4, col5, col6, col7, col8,
                 col9, col10, col11, col12, col13, col14, col15, col16);
