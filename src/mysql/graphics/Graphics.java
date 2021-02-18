@@ -26,6 +26,7 @@ import mysql.entity.User;
 import mysql.helper.Help;
 import mysql.helper.Json;
 
+import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -206,10 +207,13 @@ public class Graphics {
         return actionEvent -> {
             List<Message> listOfNew = Help.getMyMessages(user.getId());
             messagesArea.setText("");
-            for (Message m : listOfNew){
-                if (m.getTo().equals(user.getLogin()))
-                    messagesArea.appendText(m.getDt() + "-  from " + m.getFrom() + ": " + m.getText() + "\n");
-            }
+            if (!listOfNew.isEmpty())
+                for (Message m : listOfNew) {
+                    String date = Help.getTime(m.getDt());
+                    messagesArea.appendText(date + " -  from " + m.getFrom() + ": " + m.getText() + "\n");
+                }
+            else
+                messagesArea.setText("No new messages");
         };
     }
 
@@ -217,10 +221,17 @@ public class Graphics {
         return actionEvent -> {
             List<Message> listOfAll = Help.getMessagesArchive(user.getId());
             messagesArea.setText("");
-            for (Message m : listOfAll){
-                if (m.getTo().equals(user.getLogin()))
-                    messagesArea.appendText(m.getDt() + "-  from " + m.getFrom() + ": " + m.getText() + "\n");
-            }
+            if (listOfAll.size() < 20)
+                for (Message m : listOfAll){
+                    String date = Help.getTime(m.getDt());
+                    messagesArea.appendText(date + " -  from " + m.getFrom() + ": " + m.getText() + "\n");
+                }
+            else
+                for (int i = listOfAll.size() - 20; i < listOfAll.size(); i++){
+                    Message m = listOfAll.get(i);
+                    String date = Help.getTime(m.getDt());
+                    messagesArea.appendText(date + " -  from " + m.getFrom() + ": " + m.getText() + "\n");
+                }
         };
     }
 
@@ -228,8 +239,17 @@ public class Graphics {
         return actionEvent -> {
             List<Message> listOfSent = Help.getSentMessages(user.getId());
             messagesArea.setText("");
-            for (Message m : listOfSent){
-                messagesArea.appendText(m.getDt() + "-  from " + m.getFrom() + ": " + m.getText() + "\n");
+            if (listOfSent.size() < 20)
+                for (Message m : listOfSent){
+                    String date = Help.getTime(m.getDt());
+                    messagesArea.appendText(date + " -  to " + m.getTo() + ": " + m.getText() + "\n");
+                }
+            else {
+                for (int i = listOfSent.size() - 20; i < listOfSent.size(); i++){
+                    Message m = listOfSent.get(i);
+                    String date = Help.getTime(m.getDt());
+                    messagesArea.appendText(date + " -  to " + m.getTo() + ": " + m.getText() + "\n");
+                }
             }
         };
     }
@@ -458,11 +478,9 @@ public class Graphics {
         messagesArea.setMaxWidth(width-350);
         messagesArea.setMaxHeight(height-150);
         messagesArea.setStyle("-fx-margin: 20");
-        messagesArea.setFont(Font.font(12));
+        messagesArea.setFont(Font.font("Doh", 12));
         messagesArea.setEditable(false);
-        /*for (Message m : listOfAll)
-            messagesArea.appendText(m.getDt() + " " + m.getFrom() + " to " + m.getTo() + ": " + m.getText() + "\n");
-        */return messagesArea;
+        return messagesArea;
     }
 
     private static GridPane getButtonsPane(TextArea messagesArea, User user){
